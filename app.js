@@ -18,6 +18,8 @@ const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const { title } = require('process');
+
+// Start express app
 const app = express();
 // const cors = require('cors');
 
