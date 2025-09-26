@@ -40,18 +40,43 @@ const createSendToken = (user, statusCode, res) => {
 }
 
 exports.signup = catchAsync(async (req, res, next) => {
-    const newUser = await User.create({
-        role: req.body.role,
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        passwordConfirm: req.body.passwordConfirm
-        // passwordChangedAt: req.body.passwordChangedAt
-    });
-    const url = `${req.protocol}://${req.get('host')}/me`;
-    console.log(url);
-    await new Email(newUser, url).sendWelcome();
-    createSendToken(newUser, 201, res);
+    // const newUser = await User.create({
+    //     role: req.body.role,
+    //     name: req.body.name,
+    //     email: req.body.email,
+    //     password: req.body.password,
+    //     passwordConfirm: req.body.passwordConfirm
+    //     // passwordChangedAt: req.body.passwordChangedAt
+    // });
+    // const url = `${req.protocol}://${req.get('host')}/me`;
+    // console.log(url);
+    // await new Email(newUser, url).sendWelcome();
+    // createSendToken(newUser, 201, res);
+    try {
+        // Create new user
+        const newUser = await User.create({
+            role: req.body.role,
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+            passwordConfirm: req.body.passwordConfirm
+        });
+
+        // Send welcome email
+        const url = `${req.protocol}://${req.get('host')}/me`;
+        console.log(url);
+        await new Email(newUser, url).sendWelcome();
+
+        // Create and send token
+        createSendToken(newUser, 201, res);
+
+    } catch (err) {
+        // Handle duplicate email error
+        if (err.code === 11000 && err.keyPattern && err.keyPattern.email) {
+            return next(new AppError('Email already exists. Please use a different email!', 400));
+        }
+        next(err); // Pass other errors to global error handler
+    }
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -184,7 +209,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     //3) Send it to user's email
-    
+
 
     // const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didnt forget you password, please ignore this email`;
 
@@ -195,8 +220,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
         //     message
         // });
         const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-        
-        await new Email(user,resetURL).sendPasswordReset();
+
+        await new Email(user, resetURL).sendPasswordReset();
 
         res.status(200).json({
             status: 'success',

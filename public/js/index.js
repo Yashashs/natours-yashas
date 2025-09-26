@@ -2,16 +2,28 @@
 
 import '@babel/polyfill';
 import { login, logout } from "./login";
+import { signup } from "./signup";
 import { updateSettings } from './updateSettings';
 import { bookTour } from './stripe';
 
 // DOM ELEMENTS
 const loginForm = document.querySelector('.form--login');
 const logOutBtn = document.querySelector('.nav__el--logout');
+const signupForm = document.querySelector('.form--signup');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const bookbtn = document.getElementById('book-tour');
 // VALUES
+
+if (signupForm)
+    signupForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('passwordconfirm').value;
+        signup(name, email, password, passwordConfirm);
+    });
 
 
 if (loginForm)
@@ -30,7 +42,7 @@ if (userDataForm)
         const form = new FormData();
         form.append('name', document.getElementById('name').value)
         form.append('email', document.getElementById('email').value)
-        form.append('photo',document.getElementById('photo').files[0])
+        form.append('photo', document.getElementById('photo').files[0])
         console.log(form)
         // const name = document.getElementById('name').value;
         // const email = document.getElementById('email').value;
@@ -52,9 +64,9 @@ if (userPasswordForm)
         document.getElementById('password-confirm').value = '';
     });
 
-if(bookbtn)
-    bookbtn.addEventListener('click', e=> {
+if (bookbtn)
+    bookbtn.addEventListener('click', e => {
         e.target.textContent = 'Processing...'
-        const {tourId} = e.target.dataset;
+        const { tourId } = e.target.dataset;
         bookTour(tourId);
-})
+    })
